@@ -2,11 +2,13 @@
 pragma solidity ^0.8.24;
 
 import { Test, console2 } from "forge-std/Test.sol";
+import { ZkSyncChainChecker } from "lib/foundry-devops/src/ZkSyncChainChecker.sol";
+import { DeployMerkleAirdrop } from "script/DeployMerkleAirdrop.s.sol";
 import { IERC20, SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import { MerkleAirdrop } from "src/MerkleAirdrop.sol";
 import { FemiToken } from "src/FemiToken.sol";
 
-contract MerkleAirdropTest is Test {
+contract MerkleAirdropTest is Test, ZkSyncChainChecker {
   MerkleAirdrop airdrop;
   FemiToken token;
 
@@ -21,11 +23,18 @@ contract MerkleAirdropTest is Test {
   uint256 AIRDROP_BALANCE = CLAIM_AMOUNT;
 
   function setUp() public {
-    token = new FemiToken();
-    airdrop = new MerkleAirdrop(token, root);
+    if (!isZkSyncChain()) {
+      DeployMerkleAirdrop deployer = new DeployMerkleAirdrop();
 
-    token.mint(token.owner(), MINT_AMOUNT);
-    token.transfer(address(airdrop), AIRDROP_BALANCE);
+      (airdrop, token) = deployer.deployMerkleAirdrop(root);
+    }
+    else {
+      token = new FemiToken();
+      airdrop = new MerkleAirdrop(token, root);
+      
+      token.mint(token.owner(), MINT_AMOUNT);
+      token.transfer(address(airdrop), AIRDROP_BALANCE);
+    }
 
     (user, userPrivKey) = makeAddrAndKey("user");
   }
