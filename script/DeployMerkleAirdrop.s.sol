@@ -9,12 +9,15 @@ import { FemiToken } from "src/FemiToken.sol";
 contract DeployMerkleAirdrop is Script {
   // Error
   error DeployMerkleAirdrop__TokenTransferFailed();
+  
+  bytes32 root = 0xaa5d581231e596618465a56aa0f5870ba6e20785fe436d5bfb82b08662ccc7c4;
+
   uint256 AIRDROP_BALANCE = 4 * 25 * 1e18;
-  function run(bytes32 root) external returns (MerkleAirdrop, FemiToken) {
-    return deployMerkleAirdrop(root);
+  function run() external returns (MerkleAirdrop, FemiToken) {
+    return deployMerkleAirdrop();
   }
 
-  function deployMerkleAirdrop(bytes32 root) public returns (MerkleAirdrop, FemiToken) {
+  function deployMerkleAirdrop() public returns (MerkleAirdrop, FemiToken) {
     vm.startBroadcast();
 
     FemiToken token = new FemiToken();

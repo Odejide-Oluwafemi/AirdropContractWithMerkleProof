@@ -29,7 +29,7 @@ contract MerkleAirdropTest is Test, ZkSyncChainChecker {
     if (!isZkSyncChain()) {
       DeployMerkleAirdrop deployer = new DeployMerkleAirdrop();
 
-      (airdrop, token) = deployer.deployMerkleAirdrop(root);
+      (airdrop, token) = deployer.deployMerkleAirdrop();
     }
     else {
       token = new FemiToken();
