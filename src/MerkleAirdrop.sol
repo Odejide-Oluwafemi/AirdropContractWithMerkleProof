@@ -35,15 +35,29 @@ contract MerkleAirdrop is EIP712{
     i_token = _airdropToken;
   }
 
-  function claim(address _account, uint256 _amount, bytes32[] calldata _merkleProof, uint8 _v, bytes32 _r, bytes32 _s) external {
+  function claim(uint256 _amount, bytes32[] calldata _merkleProof) external {
+    if (hasClaimed[msg.sender]) revert Airdrop_AlreadyClaimed();
+
+    bytes32 _leaf = keccak256(bytes.concat(keccak256(abi.encode(msg.sender, _amount))));
+
+    if(!MerkleProof.verify(_merkleProof, i_merkleRoot, _leaf)) revert Airdrop__InvalidProof();
+
+    hasClaimed[msg.sender] = true;
+
+    emit Airdrop_Claimed(msg.sender, _amount);
+
+    i_token.safeTransfer(msg.sender, _amount);
+  }
+
+  function claimOnBehalfOf(address _account, uint256 _amount, bytes32[] calldata _merkleProof, uint8 _v, bytes32 _r, bytes32 _s) external {
     if (hasClaimed[msg.sender]) revert Airdrop_AlreadyClaimed();
     if (!_isValidSignature(_account, getMessageDigest(_account, _amount), _v, _r, _s))  revert Airdrop__InvalidSignature();
 
-    bytes32 leaf = keccak256(bytes.concat(keccak256(abi.encode(_account, _amount))));
+    bytes32 _leaf = keccak256(bytes.concat(keccak256(abi.encode(_account, _amount))));
 
-    if (!MerkleProof.verify(_merkleProof, i_merkleRoot, leaf)) revert Airdrop__InvalidProof();
+    if (!MerkleProof.verify(_merkleProof, i_merkleRoot, _leaf)) revert Airdrop__InvalidProof();
 
-    hasClaimed[msg.sender] = true;
+    hasClaimed[_account] = true;
  
     emit Airdrop_Claimed(_account, _amount);
 

@@ -43,17 +43,19 @@ contract MerkleAirdropTest is Test, ZkSyncChainChecker {
     (gasPayer, gasPayerPrivKey) = makeAddrAndKey("gasPayer");
   }
 
-  // function test__UserCanClaim() public {
-  //   uint256 balanceBefore = token.balanceOf(user);
+   function test__UserCanClaim() public {
+     uint256 balanceBefore = token.balanceOf(user);
     
-  //   vm.prank(user);
+     vm.prank(user);
 
-  //   airdrop.claim(user, CLAIM_AMOUNT, PROOF);
+     airdrop.claim(CLAIM_AMOUNT, PROOF);
 
-  //   uint256 balanceAfter = token.balanceOf(user);
+     uint256 balanceAfter = token.balanceOf(user);
 
-  //   assertEq(balanceAfter, balanceBefore + CLAIM_AMOUNT);
-  // }
+     assertEq(balanceAfter, balanceBefore + CLAIM_AMOUNT);
+
+     assertTrue(airdrop.hasUserClaimed(user));
+   }
 
   function test__UserCanSignAnotherAcountToClaimOnHisBehalf() public {
     uint256 balanceBefore = token.balanceOf(user);
@@ -63,12 +65,12 @@ contract MerkleAirdropTest is Test, ZkSyncChainChecker {
     // User signing a nessage
     (uint8 _v, bytes32 _r, bytes32 _s) = vm.sign(userPrivKey, _digest);
 
-
     // Another Account to Claim
     vm.prank(gasPayer);
-    airdrop.claim(user, CLAIM_AMOUNT, PROOF, _v, _r, _s);
+    airdrop.claimOnBehalfOf(user, CLAIM_AMOUNT, PROOF, _v, _r, _s);
 
     uint256 balanceAfter = token.balanceOf(user);
     assertEq(balanceAfter, balanceBefore + CLAIM_AMOUNT);
+    assertTrue(airdrop.hasUserClaimed(user));
   }
 }
